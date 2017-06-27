@@ -1,0 +1,40 @@
+#app, #articles {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#app {
+  font-family: monospace;
+  color: grey;
+}
+
+#app > h1 {
+  margin: auto;
+}
+
+#articles .container {
+  margin: auto;
+}
+
+#articles .article {
+  margin: 1em;
+}
+
+#articles a {
+  cursor: pointer;
+  text-decoration: none;
+  color: #0074D9;
+}
+
+#articles a:visited {
+  color: #587ca1;
+}
+
+#articles .article a > h3 {
+  margin: 0;
+}
+
+#articles .article span.time {
+  font-style: italic;
+}
