@@ -7,7 +7,8 @@ $(document).ready(function() {
 	//get the user details by making another api call and store the info in the object
 
 //TO store the required data received from api calls
-	const displayData = {};
+	const displayData = [];
+	const authorData = {}
 
 	//General Function - requires a url as a parameter and returns the data
 	function request(url) {
@@ -45,31 +46,33 @@ $(document).ready(function() {
 	}).then(stories => {
 		return Promise.all(stories).then(stories => {
 			return stories.map(storyInfo => {
-				displayData[storyInfo.by] = {title: storyInfo.title, url: storyInfo.url, timestamp: storyInfo.time, score: storyInfo.score }
-				return new Promise ((resolve, reject) => {
-					request('https://hacker-news.firebaseio.com/v0/user/'+ storyInfo.by + '.json').then(function(response) {
-						resolve(response);
-					})
-				});
+				displayData.push({ by: storyInfo.by, title: storyInfo.title, url: storyInfo.url, timestamp: storyInfo.time, score: storyInfo.score });
+				if (!authorData[storyInfo.by]){
+					return new Promise ((resolve, reject) => {
+						request('https://hacker-news.firebaseio.com/v0/user/'+ storyInfo.by + '.json').then(function(response) {
+							resolve(response);
+						})
+					});
+				}
 			})
 		})
 	}).then(users => {
 		Promise.all(users)
 		.then(users => {
 			users.forEach(user => {
-				displayData[user.id].karma = user.karma;
-				displayData[user.id].id = user.id;
+				authorData[user.id] = { karma: user.karma, };
 			})
 		})
 		.then(() => {
 			let display = '<div class="container">';
-			Object.keys(displayData).forEach(key =>{
-				display += template(displayData[key]);
+			displayData.forEach(object =>{
+				display += template(object);
 			});
 			$('#articles').html(`${display}</div>`);
 		})
 	});
 
+//Put data in html format to display
 	function template(object) {
 		const pubDate = new Date(object.timestamp* 1000);
 		const weekday=new Array("Sun","Mon","Tue","Wed","Thu","Fri","Sat");
@@ -81,10 +84,10 @@ $(document).ready(function() {
                     + monthname[pubDate.getMonth()] + ' '
                     + pubDate.getDate() + ', ' + pubDate.getFullYear() + ' '
                     + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2) + ' ET';
-    return (
+   	return (
 			"<div class='article' ><a href='" + object.url+ "'><h3>"+ object.title + "</h3></a><div><span class='time'>"
 			+ formattedDate + "</span><span> Score: " + object.score + "</span></div><div><span>"
-			+ object.karma + "</span> by <span>" + object.id + "</span></div></div>"
+			+ authorData[object.by].karma + "</span> by <span>" + object.by + "</span></div></div>"
 		)
 	}
 });
